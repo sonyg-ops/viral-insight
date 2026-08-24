@@ -19,7 +19,7 @@ CONCURRENCY = 6
 # ── 구글시트 ─────────────────────────────────────────────────
 SHEET_ID = "10WpAQU9TAsi3hRZ3ELvcQYj7Z228ILXfF6BUGz495Ak"
 TAB_RD = "콘텐츠 대시보드 연동"
-TAB_STAGING = "_인사이트_수집"
+TAB_STAGING = "_배너인사이트_자동수집"
 
 # 서비스 계정 키 파일 경로 (없으면 --sheet 옵션을 못 씁니다)
 GOOGLE_CREDENTIALS = "service_account.json"
