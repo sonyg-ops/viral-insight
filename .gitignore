@@ -1,0 +1,6 @@
+service_account.json
+.streamlit/secrets.toml
+_inbox/
+__pycache__/
+*.csv
+*.log
