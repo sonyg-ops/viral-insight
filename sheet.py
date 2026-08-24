@@ -175,6 +175,31 @@ def candidates_from_sheet(vendor: str, target: date, scope: str = "window") -> l
     return rows
 
 
+class ColumnMismatch(RuntimeError):
+    """날짜 열이 밀렸을 때. 엉뚱한 날짜에 기입하는 것을 막습니다."""
+
+
+def verify_date_column(ws, col: int, target: date) -> None:
+    """기입 직전에 그 열의 헤더가 정말 대상 날짜인지 확인합니다.
+
+    시트에 열이 삽입·삭제되면 P열 기준 계산이 어긋납니다. 헤더를 읽어
+    날짜로 해석되는데 대상일과 다르면 기입을 중단합니다.
+    (헤더가 날짜로 안 읽히면 판단 불가로 보고 그냥 진행합니다.)
+    """
+    try:
+        head = ws.cell(config.HEADER_ROW, col).value
+    except Exception:
+        return
+    got = _parse_date(head)
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", got or ""):
+        return
+    if got != target.isoformat():
+        raise ColumnMismatch(
+            f"{col}열의 헤더가 {got} 인데 기입하려는 날짜는 {target} 입니다. "
+            "시트에 열이 추가·삭제된 것 같습니다. "
+            "config.py 의 FIRST_DATE / FIRST_DATE_COL 을 맞춘 뒤 다시 시도하세요.")
+
+
 def write_values(matches, target: date, dry_run: bool = True,
                  fill_gaps: bool = True) -> tuple[int, int]:
     """확정된 매칭을 대상 날짜 열에 씁니다. 다른 열은 건드리지 않습니다.
@@ -215,6 +240,7 @@ def write_values(matches, target: date, dry_run: bool = True,
 
     import gspread
     ws = _gs().worksheet(config.TAB_RD)
+    verify_date_column(ws, tcol, target)
     ws.update_cells([gspread.Cell(r, c, v) for r, c, v in plan],
                     value_input_option="USER_ENTERED")
     return len(todo), filled

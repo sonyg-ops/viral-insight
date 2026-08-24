@@ -273,11 +273,17 @@ def tab_run() -> None:
         st.warning("구글시트가 연결되지 않아 반영할 수 없습니다.")
     elif st.button(f"시트 {matcher.date_col_for(target)}열에 반영", type="primary",
                    disabled=not final):
-        sheet.append_staging(final, target, dry_run=False)
-        n, filled = sheet.write_values(final, target, dry_run=False, fill_gaps=fill)
-        candidates.clear()
-        st.success(f"{n}건 기입 완료" + (f" (빈 열 {filled}칸 채움)" if filled else ""))
-        st.session_state.pop("res", None)
+        try:
+            sheet.append_staging(final, target, dry_run=False)
+            n, filled = sheet.write_values(final, target, dry_run=False, fill_gaps=fill)
+        except sheet.ColumnMismatch as e:
+            st.error(f"기입을 중단했습니다 — {e}")
+        except Exception as e:
+            st.error(f"기입 실패: {type(e).__name__} — {e}")
+        else:
+            candidates.clear()
+            st.success(f"{n}건 기입 완료" + (f" (빈 열 {filled}칸 채움)" if filled else ""))
+            st.session_state.pop("res", None)
 
 
 # ══════════════════════════════════════════════════════════════

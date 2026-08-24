@@ -190,8 +190,11 @@ def match_one(reading, candidates: list[Row], target: date) -> Match:
 
     if m.row.current_value is not None:
         if m.row.current_value != reading.reach:
+            # 이미 다른 값이 들어있으면 절대 자동으로 덮어쓰지 않습니다.
+            m.status = "검토필요"
             m.warnings.append(
-                f"이미 값({m.row.current_value:,})이 있습니다. 판독값은 {reading.reach:,} 입니다")
+                f"이미 값({m.row.current_value:,})이 있는데 판독값은 {reading.reach:,} 입니다. "
+                "덮어쓰려면 직접 지정해 주세요")
         else:
             m.warnings.append("이미 같은 값이 들어있습니다 (중복 수신)")
 
